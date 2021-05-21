@@ -8,8 +8,61 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
-from rest_framework import generics, mixins
+from rest_framework import generics, mixins, viewsets
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication, TokenAuthentication
+from rest_framework.permissions import IsAuthenticated
+from django.shortcuts import get_object_or_404
+
 # Create your views here.
+
+# View sets
+
+# low code advantages
+# best to use when you need usage of all api calls
+# all mixins are inherited automatically
+# the advantage is can use with rest api router method to display all available routes
+
+class ArticleViewSet(viewsets.ModelViewSet):
+    serializer_class = ArticleSerializer
+    queryset = Article.objects.all()
+
+
+# Generic viewset is like Generic class as the advantage is can use with rest api router method to display all routes
+# don't want to define any functions like noremal gerneric class, while using generic viewset you just need the serializer and queryset
+# class ArticleViewSet(viewsets.GenericViewSet,mixins.ListModelMixin, mixins.CreateModelMixin, mixins.UpdateModelMixin, mixins.RetrieveModelMixin, mixins.DestroyModelMixin):
+#     serializer_class = ArticleSerializer
+#     queryset = Article.objects.all()
+
+#     lookup_field = 'id'
+
+
+# Normal viewset is like normal class only as the advantage is can use with rest api router method to display all routes
+# class ArticleViewSet(viewsets.ViewSet):
+#     def list(self,request):
+#         articles = Article.objects.all()
+#         serializer = ArticleSerializer(articles,many=True)
+#         return Response(serializer.data)
+
+#     def create(self,request):
+#         serializer = ArticleSerializer(data=request.data)
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response(serializer.data, status=status.HTTP_201_CREATED)
+#         return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+#     def retrieve(self,request,pk=None):
+#         queryset = Article.objects.all()
+#         article = get_object_or_404(queryset,pk=pk)
+#         serializer = ArticleSerializer(article)
+#         return Response(serializer.data)
+
+#     def update(self,request,pk=None):
+#         article = Article.objects.get(pk=pk)
+#         serializer = ArticleSerializer(article, data=request.data)
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response(serializer.data, status=status.HTTP_201_CREATED)
+#         return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 #Generic Class Based Api
 
@@ -18,6 +71,10 @@ class GenericAPIView(generics.GenericAPIView, mixins.ListModelMixin, mixins.Crea
     queryset = Article.objects.all()
 
     lookup_field = 'id' # Primary Key
+
+    #authentication_classes = [SessionAuthentication,BasicAuthentication] # Basic Authentication is just your Name and password
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated] # for basic authentication
 
     def get(self, request, id=None):
         if id:
